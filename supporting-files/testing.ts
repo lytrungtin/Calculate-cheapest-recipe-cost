@@ -67,6 +67,8 @@ export function RunTest(inputRecipeSummary: any) {
             const expected = JSON.stringify(expectedObj, null, 2);
             const recieved = JSON.stringify(recievedObj, null, 2);
 
+            console.log(`${expected}`);
+            console.log(`${recieved}`);
             console.log(`CHECKING RECIPE "${recipeName}" --- ${expected !== recieved ? "IN" : ""}CORRECT ANSWER`);
         } catch (error) {
             console.log("THREW ERROR --- INCORRECT ANSWER");
