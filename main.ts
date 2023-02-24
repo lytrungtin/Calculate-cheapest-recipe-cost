@@ -18,7 +18,8 @@ const recipeSummary: any = {}; // the final result to pass into the test functio
 /*
  * YOUR CODE GOES BELOW THIS, DO NOT MODIFY ABOVE
  * (You can add more imports if needed)
- * */for (const recipe of recipeData) {
+ * */
+for (const recipe of recipeData) {
   let cheapestCost = Infinity;
   const nutrientsAtCheapestCost: Record<string, any> = {};
 
@@ -31,6 +32,7 @@ const recipeSummary: any = {}; // the final result to pass into the test functio
 
     let nutrientFactInBaseUnits: NutrientFact | null = null;
     let nutrientUnitOfMeasure: string | null = null;
+
 
     for (const product of products) {
       for (const supplierProduct of product.supplierProducts) {
@@ -53,10 +55,10 @@ const recipeSummary: any = {}; // the final result to pass into the test functio
 
       nutrientFactInBaseUnits = nutrientFact;
       nutrientUnitOfMeasure = lineItem.unitOfMeasure;
-      const nutrientAmount = nutrientFactInBaseUnits?.[nutrientUnitOfMeasure!]?.[lineItem.ingredient.nutrientName];
+      const nutrientAmount = nutrientFactInBaseUnits?.[nutrientUnitOfMeasure!]?.[nutrientFactInBaseUnits.nutrientName];
       if (nutrientAmount !== undefined) {
-        nutrientsAtCheapestCost[lineItem.ingredient.nutrientName] ||= {
-          nutrientName: lineItem.ingredient.nutrientName,
+        nutrientsAtCheapestCost[nutrientFactInBaseUnits.nutrientName] ||= {
+          nutrientName: nutrientFactInBaseUnits.nutrientName,
           quantityAmount: {
             uomAmount: 0,
             uomName: nutrientUnitOfMeasure!,
@@ -68,7 +70,7 @@ const recipeSummary: any = {}; // the final result to pass into the test functio
             uomType: "mass"
           }
         };
-        nutrientsAtCheapestCost[lineItem.ingredient.nutrientName].quantityAmount.uomAmount += nutrientAmount.uomAmount;
+        nutrientsAtCheapestCost[nutrientFactInBaseUnits.nutrientName].quantityAmount.uomAmount += nutrientAmount.uomAmount;
       }
     }
   }
