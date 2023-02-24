@@ -20,62 +20,75 @@ const recipeSummary: any = {}; // the final result to pass into the test functio
  * (You can add more imports if needed)
  * */
 
+
+// Loop through each recipe
 for (const recipe of recipeData) {
+    // Initialize variables for cheapest cost and nutrient facts at the cheapest cost
     let cheapestCost = 0;
     const nutrientsAtCheapestCost: Record<string, any> = {};
   
+    // Loop through each line item in the recipe
     for (const lineItem of recipe.lineItems) {
-      const products = GetProductsForIngredient(lineItem.ingredient);
-      if (!products.length) {
-        console.log(`No products found for ingredient: ${lineItem.ingredient.ingredientName}`);
-        continue;
-      }
-      let nutrientFactInBaseUnits: NutrientFact | null = null;
-      let cheapestProductCost = Infinity;
-      let cheapestProduct;
-      for (const product of products) {
-        for (const supplierProduct of product.supplierProducts) {
-          const costPerBaseUnit = GetCostPerBaseUnit(supplierProduct);
-          if (costPerBaseUnit === null) {
-            console.log(`No cost per base unit found for product: ${product.productName}`);
+        // Get the list of products for the current ingredient
+        const products = GetProductsForIngredient(lineItem.ingredient);
+        if (!products.length) {
+            console.log(`No products found for ingredient: ${lineItem.ingredient.ingredientName}`);
             continue;
-          }
-          cheapestProductCost = Math.min(cheapestProductCost, costPerBaseUnit);
-          if (cheapestProductCost === costPerBaseUnit) {
-            cheapestProduct = product
-          }
         }
-    }
-    if (cheapestProduct !== undefined) {
-      for (const nutrientFact of cheapestProduct.nutrientFacts) {
-        nutrientFactInBaseUnits = GetNutrientFactInBaseUnits(nutrientFact);
-        const nutrientAmount = nutrientFactInBaseUnits.quantityAmount;
-        if (nutrientAmount !== undefined) {
-          nutrientsAtCheapestCost[nutrientFactInBaseUnits.nutrientName] ||= {
-            nutrientName: nutrientFactInBaseUnits.nutrientName,
-            quantityAmount: {
-              uomAmount: 0,
-              uomName: nutrientAmount.uomName,
-              uomType: "mass"
-            },
-            quantityPer: {
-              uomAmount: 100,
-              uomName: nutrientAmount.uomName,
-              uomType: "mass"
+        // Initialize variables for cheapest product cost and product
+        let cheapestProductCost = Infinity;
+        let cheapestProduct;
+        // Loop through each product for the current ingredient
+        for (const product of products) {
+            // Loop through each supplier product for the current product
+            for (const supplierProduct of product.supplierProducts) {
+                // Get the cost per base unit for the current supplier product
+                const costPerBaseUnit = GetCostPerBaseUnit(supplierProduct);
+                if (costPerBaseUnit === null) {
+                    console.log(`No cost per base unit found for product: ${product.productName}`);
+                    continue;
+                }
+                // Update the cheapest product cost and product if the current cost per base unit is lower
+                cheapestProductCost = Math.min(cheapestProductCost, costPerBaseUnit);
+                if (cheapestProductCost === costPerBaseUnit) {
+                    cheapestProduct = product
+                }
             }
-          };
-          nutrientsAtCheapestCost[nutrientFactInBaseUnits.nutrientName].quantityAmount.uomAmount += nutrientAmount.uomAmount;
         }
-      }
-    } 
-    cheapestCost += cheapestProductCost*lineItem.unitOfMeasure.uomAmount;
+        // If a cheapest product was found, update the nutrient facts at the cheapest cost
+        if (cheapestProduct !== undefined) {
+            for (const nutrientFact of cheapestProduct.nutrientFacts) {
+                // Get the nutrient fact in base units
+                const nutrientFactInBaseUnits = GetNutrientFactInBaseUnits(nutrientFact);
+                const nutrientAmount = nutrientFactInBaseUnits.quantityAmount;
+                if (nutrientAmount !== undefined) {
+                    // Update the nutrients at the cheapest cost for the current nutrient fact
+                    nutrientsAtCheapestCost[nutrientFactInBaseUnits.nutrientName] ||= {
+                        nutrientName: nutrientFactInBaseUnits.nutrientName,
+                        quantityAmount: {
+                            uomAmount: 0,
+                            uomName: nutrientAmount.uomName,
+                            uomType: "mass"
+                        },
+                        quantityPer: {
+                            uomAmount: 100,
+                            uomName: nutrientAmount.uomName,
+                            uomType: "mass"
+                        }
+                    };
+                    nutrientsAtCheapestCost[nutrientFactInBaseUnits.nutrientName].quantityAmount.uomAmount += nutrientAmount.uomAmount;
+                }
+            }
+        } 
+        cheapestCost += cheapestProductCost*lineItem.unitOfMeasure.uomAmount;
   }
-
-  const sortedNutrients = Object.fromEntries(
+   // Sort the nutrients by name
+   const sortedNutrients = Object.fromEntries(
     Object.entries(nutrientsAtCheapestCost)
       .sort(([a], [b]) => a.localeCompare(b))
   );
   
+  // Add the recipe summary to the overall recipe summary object
   recipeSummary[recipe.recipeName] = {
     cheapestCost,
     nutrientsAtCheapestCost: sortedNutrients
