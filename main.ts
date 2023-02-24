@@ -2,6 +2,7 @@ import {
     GetProductsForIngredient,
     GetRecipes
 } from "./supporting-files/data-access";
+import {NutrientFact} from "./supporting-files/models";
 import {
     GetCostPerBaseUnit,
     GetNutrientFactInBaseUnits
@@ -39,6 +40,7 @@ for (const recipe of recipeData) {
       // Initialize variables for the cheapest product and its cost
       let cheapestProductCost = Infinity;
       let cheapestProduct;
+      let nutrientFactInBaseUnits: NutrientFact | null = null;
   
       // Loop through each product and its supplier products to find the cheapest cost per base unit
       for (const product of products) {
@@ -60,7 +62,7 @@ for (const recipe of recipeData) {
       // If a cheapest product is found, loop through its nutrient facts to update the nutrients at the cheapest cost
       if (cheapestProduct !== undefined) {
         for (const nutrientFact of cheapestProduct.nutrientFacts) {
-          const nutrientFactInBaseUnits = GetNutrientFactInBaseUnits(nutrientFact);
+          nutrientFactInBaseUnits = GetNutrientFactInBaseUnits(nutrientFact);
           const nutrientAmount = nutrientFactInBaseUnits.quantityAmount;
           // If the nutrient amount is defined, update the nutrients at the cheapest cost
           if (nutrientAmount !== undefined) {
@@ -93,11 +95,10 @@ for (const recipe of recipeData) {
     }
   
     // Sort the nutrients at the cheapest cost alphabetically and add them to the recipe summary
-   const sortedNutrients = Object.fromEntries(
+  const sortedNutrients = Object.fromEntries(
     Object.entries(nutrientsAtCheapestCost)
       .sort(([a], [b]) => a.localeCompare(b))
   );
-  
   // Add the recipe summary to the overall recipe summary object
   
   recipeSummary[recipe.recipeName] = {
