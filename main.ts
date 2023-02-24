@@ -26,10 +26,10 @@ for (const recipe of recipeData) {
     let nutrientsAtCheapestCost: Record<string, any> = {};
   
     // Use for..of loop to iterate over ingredients array
-    for (const ingredient of recipe.lineItems.ingredient) {
-      const products: Product[] = GetProductsForIngredient(ingredient.name);
+    for (const line_item of recipe.lineItems) {
+      const products: Product[] = GetProductsForIngredient(line_item.ingredient);
       if (products.length === 0) {
-        console.log(`No products found for ingredient: ${ingredient.name}`);
+        console.log(`No products found for ingredient: ${line_item.ingredient.ingredientName}`);
         continue;
       }
   
@@ -40,7 +40,8 @@ for (const recipe of recipeData) {
   
       // Use for..of loop to iterate over products array
       for (const product of products) {
-        const costPerBaseUnit = GetCostPerBaseUnit(product, ingredient);
+        for (const supplier_product of product.supplierProducts) {
+        const costPerBaseUnit = GetCostPerBaseUnit(supplier_product);
         if (costPerBaseUnit === null) {
           console.log(`No cost per base unit found for product: ${product.name}`);
           continue;
@@ -56,15 +57,16 @@ for (const recipe of recipeData) {
         // Use Math.min function to determine cheapest cost instead of if statement
         cheapestCost = Math.min(cheapestCost, costPerBaseUnit);
         nutrientFactsInBaseUnits = nutrientFacts;
-        nutrientAmountPerBaseUnit = nutrientFacts[ingredient.unit][ingredient.nutrientName];
-        nutrientUnitOfMeasure = ingredient.unit;
+        nutrientAmountPerBaseUnit = nutrientFacts[line_item.ingredient.unit][line_item.ingredient.nutrientName];
+        nutrientUnitOfMeasure = line_item.ingredient.unit;
       }
+    }
   
       // Use optional chaining to avoid null checks when accessing properties of an object
-      if (nutrientFactsInBaseUnits?.[ingredient.unit]?.[ingredient.nutrientName] !== undefined && nutrientUnitOfMeasure !== null) {
-        if (!nutrientsAtCheapestCost[ingredient.nutrientName]) {
-          nutrientsAtCheapestCost[ingredient.nutrientName] = {
-            nutrientName: ingredient.nutrientName,
+      if (nutrientFactsInBaseUnits?.[line_item.ingredient.unit]?.[line_item.ingredient.nutrientName] !== undefined && nutrientUnitOfMeasure !== null) {
+        if (!nutrientsAtCheapestCost[line_item.ingredient.nutrientName]) {
+          nutrientsAtCheapestCost[line_item.ingredient.nutrientName] = {
+            nutrientName: line_item.ingredient.nutrientName,
             quantityAmount: {
               uomAmount: 0,
               uomName: nutrientUnitOfMeasure,
@@ -79,12 +81,12 @@ for (const recipe of recipeData) {
         }
   
         // Use destructuring to simplify code
-        const { uomAmount } = nutrientFactsInBaseUnits[ingredient.unit][ingredient.nutrientName];
-        nutrientsAtCheapestCost[ingredient.nutrientName].quantityAmount.uomAmount += uomAmount;
+        const { uomAmount } = nutrientFactsInBaseUnits[line_item.ingredient.unit][line_item.ingredient.nutrientName];
+        nutrientsAtCheapestCost[line_item.ingredient.nutrientName].quantityAmount.uomAmount += uomAmount;
       }
     }
   
-    recipeSummary[recipe.name] = {
+    recipeSummary[recipe.recipeName] = {
       cheapestCost: cheapestCost,
       // Use Object.values and optional chaining to simplify code
       nutrientsAtCheapestCost: Object.values(nutrientsAtCheapestCost)
