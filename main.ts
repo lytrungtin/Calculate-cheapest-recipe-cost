@@ -92,9 +92,10 @@ for (const recipe of recipeData) {
       cheapestCost += cheapestProductCost * lineItem.unitOfMeasure.uomAmount;
     }
   
-   // Sort the nutrients at the cheapest cost alphabetically and add them to the recipe summary
-  const sortedNutrients = Object.fromEntries(
-    [...nutrientsAtCheapestCost].sort(([a], [b]) => a.localeCompare(b))
+    // Sort the nutrients at the cheapest cost alphabetically and add them to the recipe summary
+   const sortedNutrients = Object.fromEntries(
+    Object.entries(nutrientsAtCheapestCost)
+      .sort(([a], [b]) => a.localeCompare(b))
   );
   
   // Add the recipe summary to the overall recipe summary object
