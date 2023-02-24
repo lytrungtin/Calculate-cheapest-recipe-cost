@@ -10,7 +10,7 @@ import {
 import {RunTest, ExpectedRecipeSummary} from "./supporting-files/testing";
 
 console.clear();
-console.log("Expected Result Is:", ExpectedRecipeSummary);
+console.log("Expected Result Is:", JSON.stringify(ExpectedRecipeSummary, null, 2));
 
 const recipeData = GetRecipes(); // the list of 1 recipe you should calculate the information for
 const recipeSummary: any = {}; // the final result to pass into the test function
@@ -21,7 +21,7 @@ const recipeSummary: any = {}; // the final result to pass into the test functio
  * */
 
 for (const recipe of recipeData) {
-    let cheapestCost = Infinity;
+    let cheapestCost = 0;
     const nutrientsAtCheapestCost: Record<string, any> = {};
   
     for (const lineItem of recipe.lineItems) {
@@ -30,10 +30,9 @@ for (const recipe of recipeData) {
         console.log(`No products found for ingredient: ${lineItem.ingredient.ingredientName}`);
         continue;
       }
-  
       let nutrientFactInBaseUnits: NutrientFact | null = null;
-      let nutrientUnitOfMeasure: string | null = null;
-  
+      let cheapestProductCost = Infinity;
+      let cheapestProduct;
       for (const product of products) {
         for (const supplierProduct of product.supplierProducts) {
           const costPerBaseUnit = GetCostPerBaseUnit(supplierProduct);
@@ -41,44 +40,41 @@ for (const recipe of recipeData) {
             console.log(`No cost per base unit found for product: ${product.productName}`);
             continue;
           }
-  
-          cheapestCost = Math.min(cheapestCost, costPerBaseUnit);
+          cheapestProductCost = Math.min(cheapestProductCost, costPerBaseUnit);
+          if (cheapestProductCost === costPerBaseUnit) {
+            cheapestProduct = product
+          }
         }
-  
-        const nutrientFact = product.nutrientFacts
-          .map(nf => GetNutrientFactInBaseUnits(nf))
-          .find(nf => nf !== null);
-        if (nutrientFact === null) {
-          console.log(`No nutrient information found for product: ${product.productName}`);
-          continue;
-        }
-        if (nutrientFact !== undefined) {
-            nutrientFactInBaseUnits = nutrientFact;
-        }
-        nutrientUnitOfMeasure = lineItem.unitOfMeasure.toString();
-        const nutrientAmount = nutrientFactInBaseUnits?.[nutrientUnitOfMeasure!]?.[nutrientFactInBaseUnits.nutrientName];
-        if (nutrientAmount !== undefined && nutrientFactInBaseUnits !== null && nutrientFactInBaseUnits !== undefined) {
+    }
+    if (cheapestProduct !== undefined) {
+      for (const nutrientFact of cheapestProduct.nutrientFacts) {
+        nutrientFactInBaseUnits = GetNutrientFactInBaseUnits(nutrientFact);
+        const nutrientAmount = nutrientFactInBaseUnits.quantityAmount;
+        if (nutrientAmount !== undefined) {
           nutrientsAtCheapestCost[nutrientFactInBaseUnits.nutrientName] ||= {
             nutrientName: nutrientFactInBaseUnits.nutrientName,
             quantityAmount: {
               uomAmount: 0,
-              uomName: nutrientUnitOfMeasure!,
+              uomName: nutrientAmount.uomName,
               uomType: "mass"
             },
             quantityPer: {
               uomAmount: 100,
-              uomName: nutrientUnitOfMeasure!,
+              uomName: nutrientAmount.uomName,
               uomType: "mass"
             }
           };
-            nutrientsAtCheapestCost[nutrientFactInBaseUnits.nutrientName].quantityAmount.uomAmount += nutrientAmount.uomAmount;
+          nutrientsAtCheapestCost[nutrientFactInBaseUnits.nutrientName].quantityAmount.uomAmount += nutrientAmount.uomAmount;
+        }
       }
-    }
+    } 
+    cheapestCost += cheapestProductCost*lineItem.unitOfMeasure.uomAmount;
   }
 
   recipeSummary[recipe.recipeName] = {
     cheapestCost,
     nutrientsAtCheapestCost: Object.values(nutrientsAtCheapestCost)
+      .sort((a, b) => a.nutrientName.localeCompare(b.nutrientName))
   };
 }
 
