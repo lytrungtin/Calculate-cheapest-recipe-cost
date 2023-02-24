@@ -2,7 +2,6 @@ import {
     GetProductsForIngredient,
     GetRecipes
 } from "./supporting-files/data-access";
-import {NutrientFact} from "./supporting-files/models";
 import {
     GetCostPerBaseUnit,
     GetNutrientFactInBaseUnits
