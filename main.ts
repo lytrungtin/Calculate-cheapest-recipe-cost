@@ -26,7 +26,7 @@ for (const recipe of recipeData) {
     let nutrientsAtCheapestCost: Record<string, any> = {};
   
     // Use for..of loop to iterate over ingredients array
-    for (const ingredient of recipe.ingredients) {
+    for (const ingredient of recipe.lineItems.ingredient) {
       const products: Product[] = GetProductsForIngredient(ingredient.name);
       if (products.length === 0) {
         console.log(`No products found for ingredient: ${ingredient.name}`);
