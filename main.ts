@@ -2,7 +2,7 @@ import {
     GetProductsForIngredient,
     GetRecipes
 } from "./supporting-files/data-access";
-import {NutrientFact} from "./supporting-files/models";
+import {Product} from "./supporting-files/models";
 import {
     GetCostPerBaseUnit,
     GetNutrientFactInBaseUnits
@@ -20,8 +20,6 @@ const recipeSummary: any = {}; // the final result to pass into the test functio
  * (You can add more imports if needed)
  * */
 
-
-// Loop through each recipe
 for (const recipe of recipeData) {
     // Initialize variables for the cheapest cost and nutrients at the cheapest cost
     let cheapestCost = 0;
@@ -39,8 +37,7 @@ for (const recipe of recipeData) {
   
       // Initialize variables for the cheapest product and its cost
       let cheapestProductCost = Infinity;
-      let cheapestProduct;
-      let nutrientFactInBaseUnits: NutrientFact | null = null;
+      let cheapestProduct: Product | undefined;
   
       // Loop through each product and its supplier products to find the cheapest cost per base unit
       for (const product of products) {
@@ -62,7 +59,7 @@ for (const recipe of recipeData) {
       // If a cheapest product is found, loop through its nutrient facts to update the nutrients at the cheapest cost
       if (cheapestProduct !== undefined) {
         for (const nutrientFact of cheapestProduct.nutrientFacts) {
-          nutrientFactInBaseUnits = GetNutrientFactInBaseUnits(nutrientFact);
+          const nutrientFactInBaseUnits = GetNutrientFactInBaseUnits(nutrientFact);
           const nutrientAmount = nutrientFactInBaseUnits.quantityAmount;
           // If the nutrient amount is defined, update the nutrients at the cheapest cost
           if (nutrientAmount !== undefined) {
