@@ -1,8 +1,7 @@
-# MenuCoster Developer Interview Homework Test
+# Calculate cheapest recipe cost
 
 ## Instructions:
 This is a typescript programming challenge.\
-We expect this should take ~2-4 hours to solve for a junior developer, ~1-2 hours for a senior developer
 
 There are supporting files containing a set of data and functions to access it, and even some helper functions to reduce difficulty.\
 There is a list of recipes in the data (only one recipe in there... for now...)\
